@@ -39,6 +39,7 @@ spi flash reader & writer
 #define Read_Chip_ID 0x90                  //读取设备ID
 #define Read_Jedec_Id 0x9f
 #define Dummy 0xff
+#define WINBOND_FLASH 0xef
 
 extern void pabort(const char *s);
 

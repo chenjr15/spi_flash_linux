@@ -315,7 +315,7 @@ void transfer_file(int fd, char *filename)
 	close(tx_fd);
 }
 
-int is_flash_busy( ){
+int is_flash_busy(int fd){
 	default_tx[0]=Read_SR1;
 	default_tx[1]=Dummy;
 	transfer(fd, default_tx,default_rx,2);
@@ -326,7 +326,8 @@ int is_flash_busy( ){
 
 void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
 	unsigned int data_counter=0;
-	while(is_flash_busy( ));
+	int out_fd;
+	while(is_flash_busy( fd));
 
 	sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
 	
@@ -337,7 +338,7 @@ void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
 	while(data_counter< flash_size_byte){
 		transfer(fd, default_tx,default_rx,BUFFER_SIZE);
 		ret = write(out_fd, default_rx, BUFFER_SIZE);
-		if (ret != len)
+		if (ret != BUFFER_SIZE)
 		pabort("not all bytes written to backup file");
 		data_counter+=BUFFER_SIZE;
 		

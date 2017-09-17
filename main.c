@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
+	unsigned int chip_size_Mbit;
 
 	parse_opts(argc, argv);
 
@@ -64,8 +65,8 @@ int main(int argc, char *argv[])
 	printf("bits per word: %d\n", bits);
 	printf("max speed: %d Hz (%d KHz)\n", speed, speed/1000);
     
-     default_tx[0]=Read_Jedec_Id;
-     transfer(fd,default_tx,default_rx,4);
+     tx_buff[0]=Read_Jedec_Id;
+     transfer(fd,tx_buff,rx_buff,4);
 	
 
     
@@ -78,10 +79,10 @@ int main(int argc, char *argv[])
 	else if (input_file)
 		transfer_file(fd, input_file);
 	else if (backup_file){
-            if (default_rx[1] == WINBOND_FLASH){
-                if (default_rx[2] == 0x40)
+            if (rx_buff[1] == WINBOND_FLASH){
+                if (rx_buff[2] == 0x40)
                     printf("Stander SPI\n");
-                chip_size_Mbit= 0x01<<(default_rx[3]-0x11);
+                chip_size_Mbit= 0x01<<(rx_buff[3]-0x11);
                 printf("Winbond serial flash found.\n");
                 printf("flash size: %dMbit\n", chip_size_Mbit);
                 printf("Start backuping...");
