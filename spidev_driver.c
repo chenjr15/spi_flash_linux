@@ -130,7 +130,7 @@ void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len)
 		close(out_fd);
 	}
 
-	if (verbose || !output_file)
+	if (verbose)
 		hex_dump(rx, len, 32, "RX");
 }
 
@@ -327,11 +327,12 @@ int is_flash_busy(int fd){
 void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
 	unsigned int data_counter=0;
 	int out_fd;
+	int ret;
 	while(is_flash_busy( fd));
 
 	sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
 	
-	out_fd = open(output_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (out_fd < 0)
 			pabort("could not open backup file");
 	

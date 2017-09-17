@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
                 printf("Winbond serial flash found.\n");
                 printf("flash size: %dMbit\n", chip_size_Mbit);
                 printf("Start backuping...");
-				backup_chip(fd, backup_file, chip_size_Mbit/8);
+		backup_chip(fd, backup_file, (chip_size_Mbit/8)<<20);
 				}
            else{
                 close(fd);
