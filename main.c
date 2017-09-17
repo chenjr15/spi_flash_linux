@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	else if (input_file)
 		transfer_file(fd, input_file);
 	else
-		transfer(fd, default_tx, default_rx, sizeof(default_tx));
+		transfer(fd, tx_buff, rx_buff, sizeof(tx_buff));
 
 	close(fd);
 

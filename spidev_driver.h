@@ -39,7 +39,7 @@ spi flash reader & writer
 #define Read_Chip_ID 0x90                  //读取设备ID
 #define Dummy 0xff
 
-extern void pabort(const char *s)
+extern void pabort(const char *s);
 
 extern const char *device ;
 extern uint32_t mode;
@@ -59,24 +59,24 @@ uint8_t default_rx[BUFFER_SIZE] ;
 char *input_tx;
 
 extern void hex_dump(const void *src, size_t length, size_t line_size,
-		     char *prefix)
+		     char *prefix);
 
 /*
  *  Unescape - process hexadecimal escape character
  *      converts shell input "\x23" -> 0x23
  */
-extern int unescape(char *_dst, char *_src, size_t len)
+extern int unescape(char *_dst, char *_src, size_t len);
 
 
-extern void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len)
+extern void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len);
 
 
-extern void print_usage(const char *prog)
+extern void print_usage(const char *prog);
 
 
-extern void parse_opts(int argc, char *argv[])
+extern void parse_opts(int argc, char *argv[]);
 
-extern void transfer_escaped_string(int fd, char *str)
+extern void transfer_escaped_string(int fd, char *str);
 
 
 #endif
