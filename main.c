@@ -59,11 +59,17 @@ int main(int argc, char *argv[])
 	ret = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
 	if (ret == -1)
 		pabort("can't get max speed hz");
-
+    memcpy( tx_buff,"" )
 	printf("spi mode: 0x%x\n", mode);
 	printf("bits per word: %d\n", bits);
 	printf("max speed: %d Hz (%d KHz)\n", speed, speed/1000);
+    
+     default_tx[0]=Read_Jedec_Id;
+     transfer(fd,default_tx,default_rx,4);
+	
 
+    
+    
 	if (input_tx && input_file)
 		pabort("only one of -p and --input may be selected");
 
@@ -71,10 +77,25 @@ int main(int argc, char *argv[])
 		transfer_escaped_string(fd, input_tx);
 	else if (input_file)
 		transfer_file(fd, input_file);
-	else
-		transfer(fd, tx_buff, rx_buff, sizeof(tx_buff));
+	else if (backup_file){
+            if (default_rx[1] == WINBOND_FLASH){
+                if (default_rx[2] == 0x40)
+                    printf("Stander SPI\n");
+                chip_size_Mbit= 0x01<<(default_rx[3]-0x11);
+                printf("Winbond serial flash found.\n");
+                printf("flash size: %dMbit\n", chip_size_Mbit);
+                printf("Start backuping...");
+				backup_chip(fd, backup_file, chip_size_Mbit/8);
+				}
+           else{
+                close(fd);
+                exit(1);
+        }
+      }
+     
 
-	close(fd);
-
+  
+	
+    close(fd);
 	return ret;
 }

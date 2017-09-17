@@ -49,6 +49,7 @@ extern char *output_file;
 extern uint32_t speed ;
 extern uint16_t delay;
 extern int verbose;
+extern char* backup_file;
 
 /*
 uint8_t default_tx[BUFFER_SIZE];
@@ -77,6 +78,10 @@ extern void print_usage(const char *prog);
 extern void parse_opts(int argc, char *argv[]);
 
 extern void transfer_escaped_string(int fd, char *str);
+extern void backup_chip(int fd , char *out_file, unsigned int flash_size_byte);
+
+extern int is_flash_busy();
+
 
 
 #endif
