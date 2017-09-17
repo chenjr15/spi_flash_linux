@@ -2,7 +2,7 @@
 spi flash reader & writer 
  */
 
-#include <spidev_driver.h>
+#include "spidev_driver.h"
 
 
 void pabort(const char *s)
