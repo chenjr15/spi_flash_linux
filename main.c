@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	ret = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
 	if (ret == -1)
 		pabort("can't get max speed hz");
-    memcpy( tx_buff,"" )
+   
 	printf("spi mode: 0x%x\n", mode);
 	printf("bits per word: %d\n", bits);
 	printf("max speed: %d Hz (%d KHz)\n", speed, speed/1000);

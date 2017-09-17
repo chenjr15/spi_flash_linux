@@ -180,7 +180,7 @@ void parse_opts(int argc, char *argv[])
 			{ "dual",	0, 0, '2' },
 			{ "verbose", 0, 0, 'v' },
 			{ "quad",	0, 0, '4' },
-			{"backup", 0, 0, 'B'}
+			{"backup", 0, 0, 'B'},
 			{ NULL, 0, 0, 0 },
 		};
 		int c;
@@ -327,10 +327,8 @@ int is_flash_busy( ){
 void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
 	unsigned int data_counter=0;
 	while(is_flash_busy( ));
-	default_tx[0]=Read_Data;
-	default_tx[1]=0;
-	default_tx[2]=0;
-	default_tx[3]=0;
+
+	sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
 	
 	out_fd = open(output_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (out_fd < 0)

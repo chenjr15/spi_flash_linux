@@ -37,6 +37,7 @@ spi flash reader & writer
 #define Power_Down 0xB9                    //Power_Down模式
 #define Release_Power_Down 0xab            //恢复power_down模式
 #define Read_Chip_ID 0x90                  //读取设备ID
+#define Read_Jedec_Id 0x9f
 #define Dummy 0xff
 
 extern void pabort(const char *s);
