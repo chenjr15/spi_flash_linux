@@ -18,7 +18,8 @@ char *output_file;
 uint32_t speed = 500000;
 uint16_t delay;
 int verbose;
-char* backup_file=0;
+char *backup_file;
+char *read_addr_arg;
 
 uint8_t default_tx[BUFFER_SIZE] = {
 	0x9F, 0xFF, 0xFF, 0xFF, 0x48, 0xFF,
@@ -155,7 +156,8 @@ void print_usage(const char *prog)
 		 "  -R --ready	slave pulls low to pause\n"
 		 "  -2 --dual	 dual transfer\n"
 		 "  -4 --quad	 quad transfer\n"
-		 "  -B  --backup backup whole chip to a file (eg. \"backup.bin\") \n");
+		 "  -B  --backup   backup whole chip to a file (eg. \"backup.bin\") \n"
+		 "  -r   --read [addr]:[lenth(byte)]   read some data with length a addr\n\t\teg. -r 0x000025:1024 means read 1024 byte data at 0x000025");
 	exit(1);
 }
 
@@ -181,11 +183,12 @@ void parse_opts(int argc, char *argv[])
 			{ "verbose", 0, 0, 'v' },
 			{ "quad",	0, 0, '4' },
 			{"backup", 0, 0, 'B'},
+			{"read",0,0,'r'},
 			{ NULL, 0, 0, 0 },
 		};
 		int c;
 
-		c = getopt_long(argc, argv, "D:s:d:b:i:o:lHOLC3NR24p:vB:",
+		c = getopt_long(argc, argv, "D:s:d:b:i:o:lHOLC3NR24p:vB:r:",
 				lopts, NULL);
 
 		if (c == -1)
@@ -246,9 +249,11 @@ void parse_opts(int argc, char *argv[])
 		case '4':
 			mode |= SPI_TX_QUAD;
 			break;
-		 case 'B':
+		case 'B':
 			backup_file = optarg;
 			break;
+		case 'r':
+			read_addr_arg = optarg;
 		default:
 			print_usage(argv[0]);
 			break;
@@ -342,11 +347,51 @@ void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
 		if (ret != BUFFER_SIZE)
 		pabort("not all bytes written to backup file");
 		data_counter+=BUFFER_SIZE;
-		
+		if ((100*data_counter/flash_size_byte)%10==0)
+			printf("%d%%...\n",(100*data_counter/flash_size_byte));
 		
 	}
 	
 	close(out_fd);
+	
+	
+	
+}
+
+
+
+
+void read_addr(int fd, char * arg, char* out_file){
+	//3byte addr only now.
+	unsigned int addr,len;
+	unsigned int data_counter=0;
+	unsigned char* addr_str;
+	int out_fd;
+	int ret;
+	int size_temp=0;
+	sscanf(arg, "%s:")
+	sscanf(arg, "%x:%d", &addr,&len);
+	printf("Reading %d byte data at %x\n", len, len);
+	sprintf(default_tx,"%c%c%c%c",Read_Data,addr&0xff0000, addr&0xff00, addr&0xff);
+	if (out_file){
+	out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	if (out_fd < 0)
+			pabort("could not open backup file");
+	}
+	while(data_counter< len){
+		size_temp = ((len -data_counter)>=BUFFER_SIZE)?BUFFER_SIZE:(len -data_counter);
+		transfer(fd, default_tx, default_rx, size_temp);
+		if (out_file){
+			ret = write(out_fd, default_rx, size_temp);
+			if (ret != size_temp)
+			pabort("not all bytes written to out file");
+		}
+		data_counter+=size_temp;
+		if ((100*data_counter/len)%10==0)
+			printf("%d%%...\n",(100*data_counter/len));
+		
+	}
+	
 	
 	
 	

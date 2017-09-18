@@ -19,7 +19,7 @@ spi flash reader & writer
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define TRANSFER_BYTE(b) transfer(fd ,b,b,1)
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 1024
 
 //指令定义
 #define Write_Enable 0x06                  //写使能
@@ -52,6 +52,7 @@ extern uint32_t speed ;
 extern uint16_t delay;
 extern int verbose;
 extern char* backup_file;
+extern char *read_addr_arg;
 
 /*
 uint8_t default_tx[BUFFER_SIZE];
@@ -83,6 +84,7 @@ extern void transfer_escaped_string(int fd, char *str);
 extern void backup_chip(int fd , char *out_file, unsigned int flash_size_byte);
 
 extern int is_flash_busy();
+extern void read_addr(int fd, char * arg, char* out_file);
 
 
 

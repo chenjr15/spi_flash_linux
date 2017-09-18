@@ -64,13 +64,13 @@ int main(int argc, char *argv[])
 	printf("spi mode: 0x%x\n", mode);
 	printf("bits per word: %d\n", bits);
 	printf("max speed: %d Hz (%d KHz)\n", speed, speed/1000);
-    
-     tx_buff[0]=Read_Jedec_Id;
-     transfer(fd,tx_buff,rx_buff,4);
+	
+	 tx_buff[0]=Read_Jedec_Id;
+	 transfer(fd,tx_buff,rx_buff,4);
 	
 
-    
-    
+	
+	
 	if (input_tx && input_file)
 		pabort("only one of -p and --input may be selected");
 
@@ -78,25 +78,30 @@ int main(int argc, char *argv[])
 		transfer_escaped_string(fd, input_tx);
 	else if (input_file)
 		transfer_file(fd, input_file);
-	else if (backup_file){
-            if (rx_buff[1] == WINBOND_FLASH){
-                if (rx_buff[2] == 0x40)
-                    printf("Stander SPI\n");
-                chip_size_Mbit= 0x01<<(rx_buff[3]-0x11);
-                printf("Winbond serial flash found.\n");
-                printf("flash size: %dMbit\n", chip_size_Mbit);
-                printf("Start backuping...");
-		backup_chip(fd, backup_file, (chip_size_Mbit/8)<<20);
-				}
-           else{
-                close(fd);
-                exit(1);
-        }
-      }
-     
+	else {
+		/*Not in normal mode, enter spi flash mode */
+		
+		if (rx_buff[1] == WINBOND_FLASH){
+			if (rx_buff[2] == 0x40)
+				printf("Stander SPI\n");
+			chip_size_Mbit= 0x01<<(rx_buff[3]-0x11);
+			printf("Winbond serial flash found.\n");
+			printf("flash size: %dMbit\n", chip_size_Mbit);	
+			}
+		else{
+			close(fd);
+			exit(1);
+		}
+		if (backup_file){
+			printf("Start backuping...");
+			backup_chip(fd, backup_file, (chip_size_Mbit)<<17);
+			printf("Backing up to %s successed!", backup_file);
+			
+			}
+	}
 
   
 	
-    close(fd);
+	close(fd);
 	return ret;
 }
