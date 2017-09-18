@@ -329,8 +329,8 @@ int is_flash_busy(int fd){
 }
 
 
-void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
-	unsigned int data_counter=0;
+void backup_chip(int fd , char *out_file, uint32_t flash_size_byte){
+	uint32_t data_counter=0;
 	int out_fd;
 	int ret;
 	while(is_flash_busy( fd));
@@ -360,27 +360,29 @@ void backup_chip(int fd , char *out_file, unsigned int flash_size_byte){
 
 
 
-
-void read_addr(int fd, char * arg, char* out_file){
+void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffer ){
 	//3byte addr only now.
-	unsigned int addr,len;
-	unsigned int data_counter=0;
-	unsigned char* addr_str;
+	
+	uint32_t data_counter=0;
+
 	int out_fd;
 	int ret;
 	int size_temp=0;
-	sscanf(arg, "%s:")
-	sscanf(arg, "%x:%d", &addr,&len);
-	printf("Reading %d byte data at %x\n", len, len);
+
+	printf("Reading %d byte data at %x\n", len, addr);
 	sprintf(default_tx,"%c%c%c%c",Read_Data,addr&0xff0000, addr&0xff00, addr&0xff);
 	if (out_file){
-	out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (out_fd < 0)
-			pabort("could not open backup file");
+		out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		if (out_fd < 0)
+			pabort("could not open output file");
 	}
 	while(data_counter< len){
 		size_temp = ((len -data_counter)>=BUFFER_SIZE)?BUFFER_SIZE:(len -data_counter);
 		transfer(fd, default_tx, default_rx, size_temp);
+		if(buffer){
+			memcpy(buffer,default_rx, size_temp);
+			
+		}
 		if (out_file){
 			ret = write(out_fd, default_rx, size_temp);
 			if (ret != size_temp)
@@ -391,7 +393,10 @@ void read_addr(int fd, char * arg, char* out_file){
 			printf("%d%%...\n",(100*data_counter/len));
 		
 	}
-	
+	if (out_file){
+		close(out_fd);
+
+	}
 	
 	
 	

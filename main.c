@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	int fd;
-	unsigned int chip_size_Mbit;
+	uint32_t chip_size_Mbit;
 
 	parse_opts(argc, argv);
 
