@@ -388,6 +388,9 @@ void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffe
 			if (ret != size_temp)
 			pabort("not all bytes written to out file");
 		}
+		if (!(out_file||buffer)){
+			hex_dump(default_rx , size_temp, 32,"Rx");
+		}
 		data_counter+=size_temp;
 		if ((100*data_counter/len)%10==0)
 			printf("%d%%...\n",(100*data_counter/len));
