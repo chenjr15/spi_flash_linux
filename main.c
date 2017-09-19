@@ -101,8 +101,8 @@ int main(int argc, char *argv[])
 		else if (read_addr_arg)
 		{
 			uint32_t addr,read_len;
-			sscanf( read_addr_arg, "%s:%d", &addr, &read_len);
-			read_addr(fd , addr , read_len , NULL,NULL)
+			sscanf( read_addr_arg, "0x%x:%d", &addr, &read_len);
+			read_addr(fd , addr , read_len , NULL,NULL);
 			
 			
 		}

@@ -157,7 +157,8 @@ void print_usage(const char *prog)
 		 "  -2 --dual	 dual transfer\n"
 		 "  -4 --quad	 quad transfer\n"
 		 "  -B  --backup   backup whole chip to a file (eg. \"backup.bin\") \n"
-		 "  -r   --read [addr]:[lenth(byte)]   read some data with length a addr\n\t\teg. -r 0x000025:1024 means read 1024 byte data at 0x000025");
+		 "  -r   --read [addr]:[lenth(byte)]   read some data with length a addr\n"
+		 "\t\teg. -r 0x000025:1024 means read 1024 byte data at 0x000025\n");
 	exit(1);
 }
 
@@ -254,6 +255,7 @@ void parse_opts(int argc, char *argv[])
 			break;
 		case 'r':
 			read_addr_arg = optarg;
+			break;
 		default:
 			print_usage(argv[0]);
 			break;
@@ -368,14 +370,34 @@ void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffe
 	int out_fd;
 	int ret;
 	int size_temp=0;
+	struct command_32{
+		uint8_t cmd;
+		uint8_t addr1;
+		uint8_t addr2;
+		uint8_t addr3;
+	};
+	struct command_32 read_ins={
+		.cmd = Read_Data,
+		.addr1 = (addr>>16)&0xff,
+		.addr2 = (addr>>8) & 0xff,
+		.addr3 = addr &0xff,
+	};
+printf("Reading %d byte data at address 0x%x\n", len, addr);
+//sprintf(default_tx,"%c%c%c%c",Read_Data,addr&0xff0000, addr&0xff00, addr&0xff);
+	memcpy(default_tx, &read_ins,4);
 
-	printf("Reading %d byte data at %x\n", len, addr);
-	sprintf(default_tx,"%c%c%c%c",Read_Data,addr&0xff0000, addr&0xff00, addr&0xff);
+#ifdef DEBUG
+	printf("DEBUG ON\n");
+	hex_dump(default_tx,5,5,"TX");
+#endif
 	if (out_file){
 		out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
 		if (out_fd < 0)
 			pabort("could not open output file");
 	}
+	//sending instruction
+	transfer(fd,default_tx,default_rx,4);
+	//receive data
 	while(data_counter< len){
 		size_temp = ((len -data_counter)>=BUFFER_SIZE)?BUFFER_SIZE:(len -data_counter);
 		transfer(fd, default_tx, default_rx, size_temp);

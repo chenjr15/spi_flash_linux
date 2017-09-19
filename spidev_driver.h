@@ -73,7 +73,7 @@ extern int unescape(char *_dst, char *_src, size_t len);
 
 
 extern void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len);
-
+extern void transfer_file(int fd, char* in_file);
 
 extern void print_usage(const char *prog);
 
@@ -85,7 +85,7 @@ extern void backup_chip(int fd , char *out_file, uint32_t flash_size_byte);
 
 extern int is_flash_busy();
 extern void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffer );
-extern void write_chip()
+extern void write_chip();
 
 
 
