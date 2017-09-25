@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 		{
 			uint32_t addr,read_len;
 			sscanf( read_addr_arg, "0x%x:%d", &addr, &read_len);
-			read_addr(fd , addr , read_len , NULL,NULL);
+			read_addr(fd , addr , read_len , 3,  NULL,NULL);
 			
 			
 		}
