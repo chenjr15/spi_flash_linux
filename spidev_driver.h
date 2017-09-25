@@ -19,7 +19,7 @@ spi flash reader & writer
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define TRANSFER_BYTE(b) transfer(fd ,b,b,1)
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 1024
 #define INS_LEN 10
 
 //指令定义
@@ -93,6 +93,7 @@ typedef struct {
 	uint8_t byte2;
 	uint8_t byte3;	
 } fourbyte;
+
 
 
 #endif

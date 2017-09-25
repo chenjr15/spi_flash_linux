@@ -380,15 +380,17 @@ void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffe
 			hex_dump(default_rx , size_temp, 32,"Rx");
 		}
 		data_counter+=size_temp;
-		if ((100*data_counter/len)%10==0)
-			printf("%d%%...\n",(100*data_counter/len));
-		cmd[0] = Read_Data;
-		addr+=size_temp;
-		cmd[1] = (addr>>16)&0xff;
-		cmd[2] = (addr>>8) & 0xff;
-		cmd[3]  = addr &0xff;
-		printf("Reading %d byte data at address 0x%x\n", len, addr);
-		memcpy(default_tx,cmd,4);
+		if ((((100*data_counter)/len)%10)==0)
+			printf("%d%%...\n",((100*data_counter)/len));
+		if(data_counter< len){
+			addr+=size_temp;
+			cmd[0] = Read_Data;
+			cmd[1] = (addr>>16)&0xff;
+			cmd[2] = (addr>>8) & 0xff;
+			cmd[3]  = addr &0xff;
+			printf("Reading %d byte data at address 0x%x\n", len-data_counter, addr);
+			memcpy(default_tx,cmd,4);
+			}
 
 		
 	}
