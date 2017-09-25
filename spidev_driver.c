@@ -333,9 +333,21 @@ void backup_chip(int fd , char *out_file, uint32_t flash_size_byte){
 	
 }
 
+/**
+ *  \brief Read data from flash
+ *  
+ *  \param [in] fd spi device file descriptor
+ *  \param [in] addr address for reading data 3/4 byte 
+ *  \param [in] len Data length in byte 
+ *  \param [in] addr_len Address length 3 or 4  only 
+ *  \param [in] out_file File name for save the data which read from flash
+ *  \param [in] buffer Buffer pointer  for save the data which read from flash
+ *  \return nothing returns
+ *  
+ *  \details Details
+ */
 
-
-void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffer ){
+void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len,char* out_file, char * buffer ){
 	//3byte addr only now.
 	
 	uint32_t data_counter=0;
@@ -343,55 +355,70 @@ void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffe
 	int out_fd;
 	int ret;
 	int size_temp=0;
-	uint8_t cmd[INS_LEN]={0};
-	cmd[0] = Read_Data;
-	cmd[1] = (addr>>16)&0xff;
-	cmd[2] = (addr>>8) & 0xff;
-	cmd[3]  = addr &0xff;
-
-	printf("Reading %d byte data at address 0x%x\n", len, addr);
-	memcpy(default_tx,cmd,4);
-
-#ifdef DEBUG
-	printf("DEBUG ON\n");
-	hex_dump(default_tx,5,5,"TX");
-#endif
+	uint8_t cmd[INS_BUF_LEN]={0};
+	
 	if (out_file){
 		out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
 		if (out_fd < 0)
 			pabort("could not open output file");
-	}
+		}
+	
+	do{
+		//make up instruction 
+		cmd[0] = Read_Data;
+		
+		cmd[1] = (addr>>((addr_len-1)*8))&0xff;
+		cmd[2] = (addr>>((addr_len-2)*8))&0xff;
+		cmd[3] = (addr>>((addr_len-3)*8))&0xff;
+		if(addr_len-3)
+			cmd[4] = addr & 0xff;
+
+		printf("Reading %d byte data at address 0x%x\n", len, addr);
+		
+		//copy instruction into tx buffer 
+		memcpy(default_tx,cmd, (addr_len+1));
+
+	#ifdef DEBUG
+		printf("DEBUG ON\n");
+		hex_dump(default_tx,5,5,"TX");
+	#endif
+
 	//sending instruction
 	//transfer(fd,default_tx,default_rx,4);
 	//receive data
-	while(data_counter< len){
-		size_temp = ((len -data_counter)>=(BUFFER_SIZE-4))?(BUFFER_SIZE-4):(len -data_counter);
-		transfer(fd, default_tx, default_rx, size_temp+4);
+	
+		size_temp = ((len -data_counter)>=(BUFFER_SIZE-(addr_len+1)))?(BUFFER_SIZE-(addr_len+1)):(len -data_counter);
+		transfer(fd, default_tx, default_rx, size_temp+(addr_len+1));
 		if(buffer){
-			memcpy(buffer,default_rx+4, size_temp);
+			memcpy(buffer,default_rx+(addr_len+1), size_temp);
 			
 		}
 		if (out_file){
-			ret = write(out_fd, default_rx+4, (BUFFER_SIZE-4));
-			if (ret != (BUFFER_SIZE-4))
+			ret = write(out_fd, default_rx+(addr_len+1), (BUFFER_SIZE-(addr_len+1)));
+			if (ret != (BUFFER_SIZE-(addr_len+1)))
 			pabort("not all bytes written to out file");
 		}
 		if (!(out_file||buffer)){
-			hex_dump(default_rx +4, size_temp, 32,"Rx");
+			hex_dump(default_rx +(addr_len+1), size_temp, 32,"Rx");
 		}
 		data_counter+=size_temp;
-		if(data_counter< len){
-			addr+=size_temp;
-			cmd[0] = Read_Data;
-			cmd[1] = (addr>>16)&0xff;
-			cmd[2] = (addr>>8) & 0xff;
-			cmd[3]  = addr &0xff;
-			printf("Reading %d byte data at address 0x%x\n", len-data_counter, addr);
-			memcpy(default_tx,cmd,4);
-			}
+		addr+=size_temp;
+		// if(data_counter< len){
+			//
+			// cmd[0] = Read_Data;
+			// cmd[1] = (addr>>((addr_len-1)*8))&0xff;
+			// cmd[2] = (addr>>((addr_len-2)*8))&0xff;
+			// cmd[3] = (addr>>((addr_len-3)*8))&0xff;
+			// if(addr_len-3)
+				// cmd[4] = addr & 0xff;
+
+			// printf("Reading %d byte data at address 0x%x\n", len, addr);
+			// memcpy(default_tx,cmd, (addr_len+1));
+
+			// }
 
 		
-	}
+	}while(data_counter< len);
 	if (out_file){
 		close(out_fd);
 

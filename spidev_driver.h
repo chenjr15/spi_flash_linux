@@ -20,7 +20,7 @@ spi flash reader & writer
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define TRANSFER_BYTE(b) transfer(fd ,b,b,1)
 #define BUFFER_SIZE 1024
-#define INS_LEN 10
+#define INS_BUF_LEN 10
 
 //指令定义
 #define Write_Enable 0x06                  //写使能
@@ -84,7 +84,7 @@ extern void transfer_escaped_string(int fd, char *str);
 extern void backup_chip(int fd , char *out_file, uint32_t flash_size_byte);
 
 extern int is_flash_busy();
-extern void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffer );
+extern void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len, char* out_file, char * buffer );
 extern void write_chip();
 
 typedef struct {
