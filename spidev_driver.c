@@ -289,38 +289,7 @@ void transfer_escaped_string(int fd, char *str)
 	free(tx);
 }
 
-void transfer_file(int fd, char *filename)
-{
-	ssize_t bytes;
-	struct stat sb;
-	int tx_fd;
-	uint8_t *tx;
-	uint8_t *rx;
 
-	if (stat(filename, &sb) == -1)
-		pabort("can't stat input file");
-
-	tx_fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		pabort("can't open input file");
-
-	tx = malloc(sb.st_size);
-	if (!tx)
-		pabort("can't allocate tx buffer");
-
-	rx = malloc(sb.st_size);
-	if (!rx)
-		pabort("can't allocate rx buffer");
-
-	bytes = read(tx_fd, tx, sb.st_size);
-	if (bytes != sb.st_size)
-		pabort("failed to read input file");
-
-	transfer(fd, tx, rx, sb.st_size);
-	free(rx);
-	free(tx);
-	close(tx_fd);
-}
 
 int is_flash_busy(int fd){
 	default_tx[0]=Read_SR1;
@@ -335,17 +304,21 @@ void backup_chip(int fd , char *out_file, uint32_t flash_size_byte){
 	uint32_t data_counter=0;
 	int out_fd;
 	int ret;
+	int instruction_len;
 	while(is_flash_busy( fd));
 
 	sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
+	instruction_len=4
 	
 	out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (out_fd < 0)
 			pabort("could not open backup file");
 	
 	while(data_counter< flash_size_byte){
-		transfer(fd, default_tx,default_rx,BUFFER_SIZE);
-		ret = write(out_fd, default_rx, BUFFER_SIZE);
+		transfer(fd, default_tx,default_rx,BUFFER_SIZE-instruction_len);
+		sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
+		
+		ret = write(out_fd, default_rx+instruction_len, BUFFER_SIZE);
 		if (ret != BUFFER_SIZE)
 		pabort("not all bytes written to backup file");
 		data_counter+=BUFFER_SIZE;
@@ -370,21 +343,14 @@ void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffe
 	int out_fd;
 	int ret;
 	int size_temp=0;
-	struct command_32{
-		uint8_t cmd;
-		uint8_t addr1;
-		uint8_t addr2;
-		uint8_t addr3;
-	};
-	struct command_32 read_ins={
-		.cmd = Read_Data,
-		.addr1 = (addr>>16)&0xff,
-		.addr2 = (addr>>8) & 0xff,
-		.addr3 = addr &0xff,
-	};
-printf("Reading %d byte data at address 0x%x\n", len, addr);
-//sprintf(default_tx,"%c%c%c%c",Read_Data,addr&0xff0000, addr&0xff00, addr&0xff);
-	memcpy(default_tx, &read_ins,4);
+	uint8_t cmd[INS_LEN]={0};
+	cmd[0] = Read_Data;
+	cmd[1] = (addr>>16)&0xff;
+	cmd[2] = (addr>>8) & 0xff;
+	cmd[3]  = addr &0xff;
+
+	printf("Reading %d byte data at address 0x%x\n", len, addr);
+	memcpy(default_tx,cmd,4);
 
 #ifdef DEBUG
 	printf("DEBUG ON\n");
@@ -396,18 +362,18 @@ printf("Reading %d byte data at address 0x%x\n", len, addr);
 			pabort("could not open output file");
 	}
 	//sending instruction
-	transfer(fd,default_tx,default_rx,4);
+	//transfer(fd,default_tx,default_rx,4);
 	//receive data
 	while(data_counter< len){
-		size_temp = ((len -data_counter)>=BUFFER_SIZE)?BUFFER_SIZE:(len -data_counter);
-		transfer(fd, default_tx, default_rx, size_temp);
+		size_temp = ((len -data_counter)>=(BUFFER_SIZE-4))?(BUFFER_SIZE-4):(len -data_counter);
+		transfer(fd, default_tx, default_rx, size_temp+4);
 		if(buffer){
-			memcpy(buffer,default_rx, size_temp);
+			memcpy(buffer,default_rx+4, size_temp);
 			
 		}
 		if (out_file){
-			ret = write(out_fd, default_rx, size_temp);
-			if (ret != size_temp)
+			ret = write(out_fd, default_rx+4, (BUFFER_SIZE-4));
+			if (ret != (BUFFER_SIZE-4))
 			pabort("not all bytes written to out file");
 		}
 		if (!(out_file||buffer)){
@@ -416,6 +382,14 @@ printf("Reading %d byte data at address 0x%x\n", len, addr);
 		data_counter+=size_temp;
 		if ((100*data_counter/len)%10==0)
 			printf("%d%%...\n",(100*data_counter/len));
+		cmd[0] = Read_Data;
+		addr+=size_temp;
+		cmd[1] = (addr>>16)&0xff;
+		cmd[2] = (addr>>8) & 0xff;
+		cmd[3]  = addr &0xff;
+		printf("Reading %d byte data at address 0x%x\n", len, addr);
+		memcpy(default_tx,cmd,4);
+
 		
 	}
 	if (out_file){

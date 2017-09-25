@@ -19,7 +19,8 @@ spi flash reader & writer
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define TRANSFER_BYTE(b) transfer(fd ,b,b,1)
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
+#define INS_LEN 10
 
 //指令定义
 #define Write_Enable 0x06                  //写使能
@@ -60,7 +61,7 @@ uint8_t default_tx[BUFFER_SIZE];
 uint8_t default_rx[BUFFER_SIZE] ;
 
 */
-char *input_tx;
+// char *input_tx;
 
 extern void hex_dump(const void *src, size_t length, size_t line_size,
 		     char *prefix);
@@ -73,7 +74,6 @@ extern int unescape(char *_dst, char *_src, size_t len);
 
 
 extern void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len);
-extern void transfer_file(int fd, char* in_file);
 
 extern void print_usage(const char *prog);
 
@@ -87,6 +87,12 @@ extern int is_flash_busy();
 extern void read_addr(int fd, uint32_t addr, uint32_t len, char* out_file, char * buffer );
 extern void write_chip();
 
+typedef struct {
+	uint8_t byte0;
+	uint8_t byte1;
+	uint8_t byte2;
+	uint8_t byte3;	
+} fourbyte;
 
 
 #endif
