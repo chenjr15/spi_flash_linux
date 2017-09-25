@@ -308,7 +308,7 @@ void backup_chip(int fd , char *out_file, uint32_t flash_size_byte){
 	while(is_flash_busy( fd));
 
 	sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
-	instruction_len=4
+	instruction_len=4;
 	
 	out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (out_fd < 0)
