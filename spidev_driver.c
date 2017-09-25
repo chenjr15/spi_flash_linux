@@ -302,7 +302,7 @@ int is_flash_busy(int fd){
 
 void backup_chip(int fd , char *out_file, uint32_t flash_size_byte, uint8_t addr_len){
 
-	read_addr(fd , 0x00, flash_size_byte, addr_len,out_file);
+	read_addr(fd , 0x00, flash_size_byte, addr_len,out_file, NULL);
 	
 	
 }
