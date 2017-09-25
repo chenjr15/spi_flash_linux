@@ -347,7 +347,7 @@ void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len,char* out_f
 		if(addr_len-3)
 			cmd[4] = addr & 0xff;
 
-		printf("Reading %d byte data at address 0x%x\n", len, addr);
+		printf("Reading %d byte data at address 0x%x\n", len-data_counter, addr);
 		
 		//copy instruction into tx buffer 
 		memcpy(default_tx,cmd, (addr_len+1));
@@ -368,9 +368,9 @@ void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len,char* out_f
 			
 		}
 		if (out_file){
-			ret = write(out_fd, default_rx+(addr_len+1), (BUFFER_SIZE-(addr_len+1)));
-			if (ret != (BUFFER_SIZE-(addr_len+1)))
-			pabort("not all bytes written to out file");
+			ret = write(out_fd, default_rx+(addr_len+1), size_temp);
+			if (ret != size_temp)
+				pabort("not all bytes written to out file");
 		}
 		if (!(out_file||buffer)){
 			hex_dump(default_rx +(addr_len+1), size_temp, 32,"Rx");

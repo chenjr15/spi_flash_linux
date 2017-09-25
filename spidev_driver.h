@@ -19,7 +19,7 @@ spi flash reader & writer
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define TRANSFER_BYTE(b) transfer(fd ,b,b,1)
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 2052
 #define INS_BUF_LEN 10
 
 //指令定义
