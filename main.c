@@ -76,8 +76,6 @@ int main(int argc, char *argv[])
 
 	if (input_tx)
 		transfer_escaped_string(fd, input_tx);
-	else if (input_file)
-		transfer_file(fd, input_file);
 	else {
 		/*Not in normal mode, enter spi flash mode */
 		
