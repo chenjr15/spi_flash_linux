@@ -81,7 +81,7 @@ extern void print_usage(const char *prog);
 extern void parse_opts(int argc, char *argv[]);
 
 extern void transfer_escaped_string(int fd, char *str);
-extern void backup_chip(int fd , char *out_file, uint32_t flash_size_byte);
+extern void backup_chip(int fd , char *out_file, uint32_t flash_size_byte , uint8_t addr_len);
 
 extern int is_flash_busy();
 extern void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len, char* out_file, char * buffer );

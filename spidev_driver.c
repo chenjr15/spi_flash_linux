@@ -300,35 +300,9 @@ int is_flash_busy(int fd){
 }
 
 
-void backup_chip(int fd , char *out_file, uint32_t flash_size_byte){
-	uint32_t data_counter=0;
-	int out_fd;
-	int ret;
-	int instruction_len;
-	while(is_flash_busy( fd));
+void backup_chip(int fd , char *out_file, uint32_t flash_size_byte, uint8_t addr_len){
 
-	sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
-	instruction_len=4;
-	
-	out_fd = open(out_file,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (out_fd < 0)
-			pabort("could not open backup file");
-	
-	while(data_counter< flash_size_byte){
-		transfer(fd, default_tx,default_rx,BUFFER_SIZE-instruction_len);
-		sprintf(default_tx,"%c%c%c%c",Read_Data,0,0,0 );
-		
-		ret = write(out_fd, default_rx+instruction_len, BUFFER_SIZE);
-		if (ret != BUFFER_SIZE)
-		pabort("not all bytes written to backup file");
-		data_counter+=BUFFER_SIZE;
-		if ((100*data_counter/flash_size_byte)%10==0)
-			printf("%d%%...\n",(100*data_counter/flash_size_byte));
-		
-	}
-	
-	close(out_fd);
-	
+	read_addr(fd , 0x00, flash_size_byte, addr_len,out_file);
 	
 	
 }

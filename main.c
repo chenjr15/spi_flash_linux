@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		}
 		if (backup_file){
 			printf("Start backuping...");
-			backup_chip(fd, backup_file, (chip_size_Mbit)<<17);
+			backup_chip(fd, backup_file, (chip_size_Mbit)<<17,3);
 			printf("Backing up to %s successed!", backup_file);
 			
 			}
