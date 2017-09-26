@@ -83,9 +83,45 @@ extern void parse_opts(int argc, char *argv[]);
 extern void transfer_escaped_string(int fd, char *str);
 extern void backup_chip(int fd , char *out_file, uint32_t flash_size_byte , uint8_t addr_len);
 
-extern int is_flash_busy();
+
+/**
+ *  \brief get the busy status of flash 
+ *  
+ *  \param [in] fd Parameter_Description
+ *  \return value of busy bit of status register
+ *  
+ *  \details Details
+ */
+extern int is_flash_busy(int fd);
+
+/**
+ *  \brief Read data from flash
+ *  
+ *  \param [in] fd spi device file descriptor
+ *  \param [in] addr address for reading data 3/4 byte 
+ *  \param [in] len Data length in byte 
+ *  \param [in] addr_len Address length 3 or 4  only 
+ *  \param [in] out_file File name for save the data which read from flash
+ *  \param [in] buffer Buffer pointer  for save the data which read from flash
+ *  \return nothing returns
+ *  
+ *  \details Details
+ */
 extern void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len, char* out_file, char * buffer );
 extern void write_chip();
+extern void page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data );
+extern void sector_erase(int fd, uint32_t addr, uint8_t addr_len);
+
+/**
+ *  \brief Send Write_Enable byte to flash
+ *  
+ *  \param [in] fd Parameter_Description
+ *  \return useless
+ *  
+ *  \details Details
+ */
+extern int write_enable(int fd);
+
 
 typedef struct {
 	uint8_t byte0;
