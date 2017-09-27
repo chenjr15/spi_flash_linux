@@ -21,6 +21,11 @@ spi flash reader & writer
 #define TRANSFER_BYTE(b) transfer(fd ,b,b,1)
 #define BUFFER_SIZE 2052
 #define INS_BUF_LEN 10
+#define VERBOSE 1
+#define SECTOR_SIZE 4096
+#define PAGE_SIZE 256
+#define OK
+
 
 //指令定义
 #define Write_Enable 0x06                  //写使能
@@ -75,10 +80,8 @@ extern int unescape(char *_dst, char *_src, size_t len);
 
 extern void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len);
 
-extern void print_usage(const char *prog);
-
-
-extern void parse_opts(int argc, char *argv[]);
+//extern void print_usage(const char *prog);
+//extern void parse_opts(int argc, char *argv[]);
 
 extern void transfer_escaped_string(int fd, char *str);
 extern void backup_chip(int fd , char *out_file, uint32_t flash_size_byte , uint8_t addr_len);
@@ -109,7 +112,7 @@ extern int is_flash_busy(int fd);
  */
 extern void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len, char* out_file, char * buffer );
 extern void write_chip();
-extern void page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data );
+extern int  page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data, uint16_t data_len  );
 extern void sector_erase(int fd, uint32_t addr, uint8_t addr_len);
 
 /**
@@ -122,6 +125,9 @@ extern void sector_erase(int fd, uint32_t addr, uint8_t addr_len);
  */
 extern int write_enable(int fd);
 
+extern int makeup_instruction(uint8_t ins, uint32_t addr, uint8_t addr_len, uint8_t *buffer);
+
+extern int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t len);
 
 typedef struct {
 	uint8_t byte0;

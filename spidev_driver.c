@@ -116,158 +116,24 @@ void transfer(int fd, uint8_t const *tx, uint8_t const *rx, size_t len)
 	if (ret < 1)
 		pabort("can't send spi message");
 
-	if (verbose)
+	if (verbose){
 		hex_dump(tx, len, 32, "TX");
-
-	if (output_file) {
-		out_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-		if (out_fd < 0)
-			pabort("could not open output file");
-
-		ret = write(out_fd, rx, len);
-		if (ret != len)
-			pabort("not all bytes written to output file");
-
-		close(out_fd);
-	}
-
-	if (verbose)
 		hex_dump(rx, len, 32, "RX");
-}
-
-void print_usage(const char *prog)
-{
-	printf("Usage: %s [-DsbdlHOLC3B]\n", prog);
-	puts("  -D --device   device to use (default /dev/spidev0.0)\n"
-		 "  -s --speed	max speed (Hz)\n"
-		 "  -d --delay	delay (usec)\n"
-		 "  -b --bpw	  bits per word\n"
-		 "  -i --input	input data from a file (e.g. \"test.bin\")\n"
-		 "  -o --output   output data to a file (e.g. \"results.bin\")\n"
-		 "  -l --loop	 loopback\n"
-		 "  -H --cpha	 clock phase\n"
-		 "  -O --cpol	 clock polarity\n"
-		 "  -L --lsb	  least significant bit first\n"
-		 "  -C --cs-high  chip select active high\n"
-		 "  -3 --3wire	SI/SO signals shared\n"
-		 "  -v --verbose  Verbose (show tx buffer)\n"
-		 "  -p			Send data (e.g. \"1234\\xde\\xad\")\n"
-		 "  -N --no-cs	no chip select\n"
-		 "  -R --ready	slave pulls low to pause\n"
-		 "  -2 --dual	 dual transfer\n"
-		 "  -4 --quad	 quad transfer\n"
-		 "  -B  --backup   backup whole chip to a file (eg. \"backup.bin\") \n"
-		 "  -r   --read [addr]:[lenth(byte)]   read some data with length a addr\n"
-		 "\t\teg. -r 0x000025:1024 means read 1024 byte data at 0x000025\n");
-	exit(1);
-}
-
-void parse_opts(int argc, char *argv[])
-{
-	while (1) {
-		const struct option lopts[] = {
-			{ "device",  1, 0, 'D' },
-			{ "speed",   1, 0, 's' },
-			{ "delay",   1, 0, 'd' },
-			{ "bpw",	 1, 0, 'b' },
-			{ "input",   1, 0, 'i' },
-			{ "output",  1, 0, 'o' },
-			{ "loop",	0, 0, 'l' },
-			{ "cpha",	0, 0, 'H' },
-			{ "cpol",	0, 0, 'O' },
-			{ "lsb",	 0, 0, 'L' },
-			{ "cs-high", 0, 0, 'C' },
-			{ "3wire",   0, 0, '3' },
-			{ "no-cs",   0, 0, 'N' },
-			{ "ready",   0, 0, 'R' },
-			{ "dual",	0, 0, '2' },
-			{ "verbose", 0, 0, 'v' },
-			{ "quad",	0, 0, '4' },
-			{"backup", 0, 0, 'B'},
-			{"read",0,0,'r'},
-			{ NULL, 0, 0, 0 },
-		};
-		int c;
-
-		c = getopt_long(argc, argv, "D:s:d:b:i:o:lHOLC3NR24p:vB:r:",
-				lopts, NULL);
-
-		if (c == -1)
-			break;
-
-		switch (c) {
-		case 'D':
-			device = optarg;
-			break;
-		case 's':
-			speed = atoi(optarg);
-			break;
-		case 'd':
-			delay = atoi(optarg);
-			break;
-		case 'b':
-			bits = atoi(optarg);
-			break;
-		case 'i':
-			input_file = optarg;
-			break;
-		case 'o':
-			output_file = optarg;
-			break;
-		case 'l':
-			mode |= SPI_LOOP;
-			break;
-		case 'H':
-			mode |= SPI_CPHA;
-			break;
-		case 'O':
-			mode |= SPI_CPOL;
-			break;
-		case 'L':
-			mode |= SPI_LSB_FIRST;
-			break;
-		case 'C':
-			mode |= SPI_CS_HIGH;
-			break;
-		case '3':
-			mode |= SPI_3WIRE;
-			break;
-		case 'N':
-			mode |= SPI_NO_CS;
-			break;
-		case 'v':
-			verbose = 1;
-			break;
-		case 'R':
-			mode |= SPI_READY;
-			break;
-		case 'p':
-			input_tx = optarg;
-			break;
-		case '2':
-			mode |= SPI_TX_DUAL;
-			break;
-		case '4':
-			mode |= SPI_TX_QUAD;
-			break;
-		case 'B':
-			backup_file = optarg;
-			break;
-		case 'r':
-			read_addr_arg = optarg;
-			break;
-		default:
-			print_usage(argv[0]);
-			break;
 		}
-	}
-	if (mode & SPI_LOOP) {
-		if (mode & SPI_TX_DUAL)
-			mode |= SPI_RX_DUAL;
-		if (mode & SPI_TX_QUAD)
-			mode |= SPI_RX_QUAD;
-	}
+	// if (output_file) {
+		// out_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		// if (out_fd < 0)
+			// pabort("could not open output file");
+
+		// ret = write(out_fd, rx, len);
+		// if (ret != len)
+			// pabort("not all bytes written to output file");
+
+		// close(out_fd);
+	// }
+
 }
+
 
 void transfer_escaped_string(int fd, char *str)
 {
@@ -381,9 +247,8 @@ void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len,char* out_f
 
 void sector_erase(int fd, uint32_t addr, uint8_t addr_len){
 	uint8_t cmd[INS_BUF_LEN]={0};
-	default_tx[0] = Sector_Erase;
 	//make up instruction 
-	cmd[0] = Read_Data;
+	cmd[0] = Sector_Erase;
 	
 	cmd[1] = (addr>>((addr_len-1)*8))&0xff;
 	cmd[2] = (addr>>((addr_len-2)*8))&0xff;
@@ -394,4 +259,49 @@ void sector_erase(int fd, uint32_t addr, uint8_t addr_len){
 	transfer(fd, default_tx, default_rx, (addr_len+1));
 
 }//end of  sector_erase()
+
+
+
+int  page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data, uint16_t data_len ){
+	if (addr&0xFF)return -1;
+	if (len>256) return -2;
+	if ((!addr)||(!data_len)) return -3;
+	makeup_instruction(Page_Program,addr , addr_len, default_tx);
+	memcpy( default_tx+(addr_len+1),data,data_len);
+	transfer(fd , default_tx,default_rx,data_len+(addr_len+1));
+	
+	
+	return OK;
+	
+	
+}//end of page_program()
+
+int makeup_instruction(uint8_t ins, uint32_t addr, uint8_t addr_len, uint8_t *buffer){
+	if ((addr_len!=4) &&(addr_len!=3)) return -1;
+	if (buffer == NULL) return -2;
+	//make up instruction 
+	buffer[0] = ins;
+	
+	buffer[1] = (addr>>((addr_len-1)*8))&0xff;
+	buffer[2] = (addr>>((addr_len-2)*8))&0xff;
+	buffer[3] = (addr>>((addr_len-3)*8))&0xff;
+	if(addr_len-3) buffer[4] = addr & 0xff;
+	return OK;
+	
+}//end of makeup_instruction()
+
+int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t len){
+	
+	uint32_t sector_addr,page_addr;
+	uint8_t *template_buffer = malloc(SECTOR_SIZE);
+	//calculate sector which addr at 
+	sector_addr = addr - (addr%sector_addr);
+	//read out data in sector to template_buffer
+	read_addr(fd , sector_addr , SECTOR_SIZE , addr_len , NULL , template_buffer);
+	
+	free( template_buffer);
+
+	
+	
+}//end of write_addr()
 
