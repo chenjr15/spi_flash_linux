@@ -264,7 +264,7 @@ void sector_erase(int fd, uint32_t addr, uint8_t addr_len){
 
 int  page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data, uint16_t data_len ){
 	if (addr&0xFF)return -1;
-	if (len>256) return -2;
+	if (data_len>256) return -2;
 	if ((!addr)||(!data_len)) return -3;
 	makeup_instruction(Page_Program,addr , addr_len, default_tx);
 	memcpy( default_tx+(addr_len+1),data,data_len);

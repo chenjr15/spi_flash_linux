@@ -24,7 +24,7 @@ spi flash reader & writer
 #define VERBOSE 1
 #define SECTOR_SIZE 4096
 #define PAGE_SIZE 256
-#define OK
+#define OK 1
 
 
 //指令定义
