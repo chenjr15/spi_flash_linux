@@ -266,6 +266,7 @@ int  page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data, uint1
 	if (addr&0xFF)return -1;
 	if (data_len>256) return -2;
 	if ((!addr)||(!data_len)) return -3;
+	write_enable(fd);
 	makeup_instruction(Page_Program,addr , addr_len, default_tx);
 	memcpy( default_tx+(addr_len+1),data,data_len);
 	transfer(fd , default_tx,default_rx,data_len+(addr_len+1));
@@ -290,14 +291,52 @@ int makeup_instruction(uint8_t ins, uint32_t addr, uint8_t addr_len, uint8_t *bu
 	
 }//end of makeup_instruction()
 
-int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t len){
+int sector_program(int fd, uint32_t page_addr,  uint8_t addr_len, uint8_t * data){
+
+	int written_times=0;
+	do{
+		
+		page_program(fd,page_addr, addr_len, data, W25_PAGE_SIZE);
+		page_addr+=W25_PAGE_SIZE;
+		data+= W25_PAGE_SIZE;
+		written_times++;
+		
+	}while( written_times <(W25_SECTOR_SIZE/W25_PAGE_SIZE) );
+	return 1;
 	
-	uint32_t sector_addr,page_addr;
-	uint8_t *template_buffer = malloc(SECTOR_SIZE);
+}//end of sector_program
+
+int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t data_len){
+	//dc for writen data counter
+	uint32_t sector_addr,page_addr,dc;
+	uint8_t *template_buffer ;
+	uint8_t *buffer_p;
+	
+	uint32_t write_len;
+	template_buffer = malloc(W25_SECTOR_SIZE);
 	//calculate sector which addr at 
 	sector_addr = addr - (addr%sector_addr);
 	//read out data in sector to template_buffer
-	read_addr(fd , sector_addr , SECTOR_SIZE , addr_len , NULL , template_buffer);
+	read_addr(fd , sector_addr , W25_SECTOR_SIZE , addr_len , NULL , template_buffer);
+	//if the end of data is outside the  this sector 
+ 	if ((addr + data_len)>(sector_addr+W25_SECTOR_SIZE))
+		write_len = (sector_addr+W25_SECTOR_SIZE)-(addr+dc);
+	//else, the data is ended inside this sector 
+	else 
+		write_len = data_len;
+	//fill new data into buffer
+	memcpy( template_buffer+(addr - sector_addr) , data , write_len);
+	
+	sector_erase(fd, sector_addr ,addr_len);
+	//wait for flash working done
+	while(is_flash_busy(fd))
+		for(uint16_t i = 1;i;i++);
+	//program data into sector 
+	sector_program(fd, sector_addr, addr_len , template_buffer);
+	dc +=write_len;
+	//first sector wrtten done 
+
+	
 	
 	free( template_buffer);
 

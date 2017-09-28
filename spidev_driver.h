@@ -22,8 +22,8 @@ spi flash reader & writer
 #define BUFFER_SIZE 2052
 #define INS_BUF_LEN 10
 #define VERBOSE 1
-#define SECTOR_SIZE 4096
-#define PAGE_SIZE 256
+#define W25_SECTOR_SIZE 4096
+#define W25_PAGE_SIZE 256
 #define OK 1
 
 
@@ -127,7 +127,8 @@ extern int write_enable(int fd);
 
 extern int makeup_instruction(uint8_t ins, uint32_t addr, uint8_t addr_len, uint8_t *buffer);
 
-extern int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t len);
+extern int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t data_len);
+extern int sector_program(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data);
 
 typedef struct {
 	uint8_t byte0;
