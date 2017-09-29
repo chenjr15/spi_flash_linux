@@ -308,19 +308,21 @@ int sector_program(int fd, uint32_t page_addr,  uint8_t addr_len, uint8_t * data
 
 int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_t data_len){
 	//dc for writen data counter
-	uint32_t sector_addr,page_addr,dc;
+	uint32_t sector_addr,next_sector,page_addr,dc;
 	uint8_t *template_buffer ;
 	uint8_t *buffer_p;
 	
 	uint32_t write_len;
+	dc = 0;
 	template_buffer = malloc(W25_SECTOR_SIZE);
 	//calculate sector which addr at 
 	sector_addr = addr - (addr%sector_addr);
+	next_sector = sector_addr + W25_PAGE_SIZE;
 	//read out data in sector to template_buffer
 	read_addr(fd , sector_addr , W25_SECTOR_SIZE , addr_len , NULL , template_buffer);
 	//if the end of data is outside the  this sector 
- 	if ((addr + data_len)>(sector_addr+W25_SECTOR_SIZE))
-		write_len = (sector_addr+W25_SECTOR_SIZE)-(addr+dc);
+ 	if ((addr + data_len)>next_sector)
+		write_len = next_sector-(addr+dc);
 	//else, the data is ended inside this sector 
 	else 
 		write_len = data_len;
@@ -335,9 +337,11 @@ int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_
 	sector_program(fd, sector_addr, addr_len , template_buffer);
 	dc +=write_len;
 	//first sector wrtten done 
-
-	
-	
+	if ((addr + data_len)>next_sector )
+		
+		
+		
+		
 	free( template_buffer);
 
 	
