@@ -23,21 +23,21 @@ void print_usage(const char *prog)
 	puts("  -D --device   device to use (default /dev/spidev0.0)\n"
 		 "  -s --speed	max speed (Hz)\n"
 		 "  -d --delay	delay (usec)\n"
-		 "  -b --bpw	  bits per word\n"
+		// "  -b --bpw	  bits per word\n"
 		 "  -i --input	input data from a file (e.g. \"test.bin\")\n"
 		 "  -o --output   output data to a file (e.g. \"results.bin\")\n"
-		 "  -l --loop	 loopback\n"
-		 "  -H --cpha	 clock phase\n"
-		 "  -O --cpol	 clock polarity\n"
-		 "  -L --lsb	  least significant bit first\n"
-		 "  -C --cs-high  chip select active high\n"
-		 "  -3 --3wire	SI/SO signals shared\n"
+		// "  -l --loop	 loopback\n"
+		// "  -H --cpha	 clock phase\n"
+		// "  -O --cpol	 clock polarity\n"
+		// "  -L --lsb	  least significant bit first\n"
+		// "  -C --cs-high  chip select active high\n"
+		// "  -3 --3wire	SI/SO signals shared\n"
 		 "  -v --verbose  Verbose (show tx buffer)\n"
 		 "  -p			Send data (e.g. \"1234\\xde\\xad\")\n"
 		 "  -N --no-cs	no chip select\n"
 		 "  -R --ready	slave pulls low to pause\n"
-		 "  -2 --dual	 dual transfer\n"
-		 "  -4 --quad	 quad transfer\n"
+		// "  -2 --dual	 dual transfer\n"
+		// "  -4 --quad	 quad transfer\n"
 		 "  -B  --backup   backup whole chip to a file (eg. \"backup.bin\") \n"
 		 "  -r   --read [addr]:[lenth(byte)]   read some data with length a addr\n"
 		 "\t\teg. -r 0x000025:1024 means read 1024 byte data at 0x000025\n");
@@ -51,27 +51,29 @@ void parse_opts(int argc, char *argv[])
 			{ "device",  1, 0, 'D' },
 			{ "speed",   1, 0, 's' },
 			{ "delay",   1, 0, 'd' },
-			{ "bpw",	 1, 0, 'b' },
+			//{ "bpw",	 1, 0, 'b' },
 			{ "input",   1, 0, 'i' },
 			{ "output",  1, 0, 'o' },
-			{ "loop",	0, 0, 'l' },
-			{ "cpha",	0, 0, 'H' },
-			{ "cpol",	0, 0, 'O' },
-			{ "lsb",	 0, 0, 'L' },
-			{ "cs-high", 0, 0, 'C' },
-			{ "3wire",   0, 0, '3' },
+			//{ "loop",	0, 0, 'l' },
+			//{ "cpha",	0, 0, 'H' },
+			//{ "cpol",	0, 0, 'O' },
+			//{ "lsb",	 0, 0, 'L' },
+			//{ "cs-high", 0, 0, 'C' },
+			//{ "3wire",   0, 0, '3' },
 			{ "no-cs",   0, 0, 'N' },
 			{ "ready",   0, 0, 'R' },
-			{ "dual",	0, 0, '2' },
+			//{ "dual",	0, 0, '2' },
 			{ "verbose", 0, 0, 'v' },
-			{ "quad",	0, 0, '4' },
+			//{ "quad",	0, 0, '4' },
 			{"backup", 0, 0, 'B'},
 			{"read",0,0,'r'},
 			{ NULL, 0, 0, 0 },
 		};
 		int c;
 
-		c = getopt_long(argc, argv, "D:s:d:b:i:o:lHOLC3NR24p:vB:r:",
+		//c = getopt_long(argc, argv, "D:s:d:b:i:o:lHOLC3NR24p:vB:r:",
+				lopts, NULL);
+				c= getopt_long(argc, argv, "D:s:d:b:i:o:NRp:vB:r:",
 				lopts, NULL);
 
 		if (c == -1)
@@ -202,44 +204,18 @@ int main(int argc, char *argv[])
 	
 	 tx_buff[0]=Read_Jedec_Id;
 	 transfer(fd,tx_buff,rx_buff,4);
-	
-
-	
-	
 	if (input_tx && input_file)
 		pabort("only one of -p and --input may be selected");
-
-	if (input_tx)
-		transfer_escaped_string(fd, input_tx);
-	else {
 		/*Not in normal mode, enter spi flash mode */
 		
-		if (rx_buff[1] == WINBOND_FLASH){
-			if (rx_buff[2] == 0x40)
-				printf("Stander SPI\n");
-			chip_size_Mbit= 0x01<<(rx_buff[3]-0x11);
-			printf("Winbond serial flash found.\n");
-			printf("flash size: %dMbit\n", chip_size_Mbit);	
-			}
-		else{
-			close(fd);
-			exit(1);
-			}
-		if (backup_file){
-			printf("Start backuping...");
-			backup_chip(fd, backup_file, (chip_size_Mbit)<<17,3);
-			printf("Backing up to %s successed!", backup_file);
-			
-			}
-		else if (read_addr_arg)
-		{
-			uint32_t addr,read_len;
-			sscanf( read_addr_arg, "0x%x:%d", &addr, &read_len);
-			read_addr(fd , addr , read_len , 3,  NULL,NULL);
+	if (rx_buff[1] == WINBOND_FLASH){
+		if (rx_buff[2] == 0x40)
+			printf("Stander SPI\n");
+		chip_size_Mbit= 0x01<<(rx_buff[3]-0x11);
+		printf("Winbond serial flash found.\n");
+		printf("flash size: %dMbit(%dMB)\n", chip_size_Mbit,chip_size_Mbit>>3);
+	
 		}
-		
-	}
-
   
 	
 	close(fd);
