@@ -110,7 +110,7 @@ extern int is_flash_busy(int fd);
  *  
  *  \details Details
  */
-extern void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len, char* out_file, char * buffer );
+extern void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len, uint8_t* out_file, char * buffer );
 extern void write_chip();
 extern int  page_program(int fd, uint32_t addr, uint8_t addr_len, uint8_t * data, uint16_t data_len  );
 extern void sector_erase(int fd, uint32_t addr, uint8_t addr_len);

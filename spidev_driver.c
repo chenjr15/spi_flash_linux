@@ -180,7 +180,7 @@ void backup_chip(int fd , char *out_file, uint32_t flash_size_byte, uint8_t addr
 
 
 
-void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len,char* out_file, char * buffer ){
+void read_addr(int fd, uint32_t addr, uint32_t len, uint8_t addr_len,char* out_file, uint8_t * buffer ){
 	//To record how many bytes datas had been read.
 	uint32_t data_counter=0;
 
