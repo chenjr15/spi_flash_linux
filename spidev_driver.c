@@ -325,7 +325,7 @@ int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_
 		write_len = next_sector-(addr+dc);
 	//else, the data is ended inside this sector 
 	else 
-		write_len = data_len;
+		write_len = W25_SECTOR_SIZE;
 	//fill new data into buffer
 	memcpy( template_buffer+(addr - sector_addr) , data , write_len);
 	
@@ -337,7 +337,31 @@ int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_
 	sector_program(fd, sector_addr, addr_len , template_buffer);
 	dc +=write_len;
 	//first sector wrtten done 
-	if ((addr + data_len)>next_sector )
+	while ((addr + data_len)>next_sector ){
+	
+	  	sector_addr +=W25_SECTOR_SIZE;
+  	 next_sector = sector_addr +  W25_PAGE_SIZE;
+	//read out data in sector to template_buffer
+	  read_addr(fd , sector_addr , W25_SECTOR_SIZE , addr_len , NULL , template_buffer);
+	//if the end of data is outside the  this sector 
+ 	  if ((addr + data_len)>next_sector)
+		    write_len = next_sector-(addr+dc);
+	//else, the data is ended inside this sector 
+	  else 
+		    write_len = data_len-dc;
+	//fill new data into buffer
+	memcpy( template_buffer , data +dc, write_len);
+	
+	sector_erase(fd, sector_addr ,addr_len);
+	//wait for flash working done
+	while(is_flash_busy(fd))
+		for(uint16_t i = 1;i;i++);
+	//program data into sector 
+	sector_program(fd, sector_addr, addr_len , template_buffer);
+	dc +=write_len;
+	
+	
+	}
 		
 		
 		
@@ -347,4 +371,3 @@ int write_addr(int fd, uint32_t addr,  uint8_t addr_len, uint8_t * data, uint32_
 	
 	
 }//end of write_addr()
-
