@@ -67,13 +67,14 @@ void parse_opts(int argc, char *argv[])
 			//{ "quad",	0, 0, '4' },
 			{"backup", 0, 0, 'B'},
 			{"read",0,0,'r'},
+			{"write",0,0,'w'},
 			{ NULL, 0, 0, 0 },
 		};
 		int c;
 
 		//c = getopt_long(argc, argv, "D:s:d:b:i:o:lHOLC3NR24p:vB:r:",
-				lopts, NULL);
-				c= getopt_long(argc, argv, "D:s:d:b:i:o:NRp:vB:r:",
+				//lopts, NULL);
+				c= getopt_long(argc, argv, "D:s:d:b:i:o:NRp:vB:r:w:",
 				lopts, NULL);
 
 		if (c == -1)
@@ -89,15 +90,18 @@ void parse_opts(int argc, char *argv[])
 		case 'd':
 			delay = atoi(optarg);
 			break;
+/*
 		case 'b':
 			bits = atoi(optarg);
 			break;
+		*/
 		case 'i':
 			input_file = optarg;
 			break;
 		case 'o':
 			output_file = optarg;
 			break;
+			/*
 		case 'l':
 			mode |= SPI_LOOP;
 			break;
@@ -110,12 +114,14 @@ void parse_opts(int argc, char *argv[])
 		case 'L':
 			mode |= SPI_LSB_FIRST;
 			break;
+		
 		case 'C':
 			mode |= SPI_CS_HIGH;
 			break;
 		case '3':
 			mode |= SPI_3WIRE;
 			break;
+			*/
 		case 'N':
 			mode |= SPI_NO_CS;
 			break;
@@ -128,17 +134,22 @@ void parse_opts(int argc, char *argv[])
 		case 'p':
 			input_tx = optarg;
 			break;
+/*
 		case '2':
 			mode |= SPI_TX_DUAL;
 			break;
 		case '4':
 			mode |= SPI_TX_QUAD;
 			break;
+			*/
 		case 'B':
 			backup_file = optarg;
 			break;
 		case 'r':
 			read_addr_arg = optarg;
+			break;
+		case 'w':
+			write_addr_arg=optarg;
 			break;
 		default:
 			print_usage(argv[0]);
@@ -214,6 +225,35 @@ int main(int argc, char *argv[])
 		chip_size_Mbit= 0x01<<(rx_buff[3]-0x11);
 		printf("Winbond serial flash found.\n");
 		printf("flash size: %dMbit(%dMB)\n", chip_size_Mbit,chip_size_Mbit>>3);
+		if (read_addr_arg&&write_addr_arg)
+				pabort("conflict args\n");
+		if (write_addr_arg&&(!input_tx))
+				pabort("-w(--write) should be used with -p\n");
+
+		if (backup_file){
+			printf("Start backuping...");
+			backup_chip(fd, backup_file, (chip_size_Mbit)<<17,3);
+			printf("Backing up to %s successed!", backup_file);
+
+			}
+		else if (read_addr_arg)
+		{
+			uint32_t addr,read_len;
+			sscanf( read_addr_arg, "0x%x:%d", &addr, &read_len);
+			read_addr(fd , addr , read_len , 3,  NULL,NULL);
+		}
+		else if (write_addr_arg&&input_tx){
+				uint32_t w_len;
+				uint8_t* wbuffer;
+				uint32_t waddr;
+				sscanf(write_addr_arg,"0x%d:%d",&waddr,&w_len);
+				wbuffer=(uint8_t*)malloc(w_len);
+				//Attention! This unescape function can't restrict the input len as we see. The len in -w can't not smaller than length of unescaped string, or it will cause crash!
+				unescape(wbuffer,input_tx, strlen(input_tx));
+				printf("Writing %d byte datas into flash at 0x%x\n",w_len,waddr);
+				write_addr(fd, waddr,3,wbuffer,w_len);
+				free(wbuffer);
+		}
 	
 		}
   
